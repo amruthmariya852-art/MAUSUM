@@ -1,0 +1,142 @@
+/* Custom Styles for Mausam 2.0 Personalized Weather Portal */
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Custom Scrollbar for normal elements */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(51, 65, 85, 0.8);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(71, 85, 105, 1);
+}
+
+/* Persona Tab Button Styles */
+.persona-tab {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  color: #94a3b8;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.persona-tab:hover {
+  background: rgba(51, 65, 85, 0.9);
+  color: #f1f5f9;
+  border-color: rgba(96, 165, 250, 0.5);
+  transform: translateY(-1px);
+}
+
+.persona-tab.active {
+  background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+  border-color: #60a5fa;
+  color: #ffffff;
+  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.35);
+  font-weight: 700;
+  transform: translateY(-1px);
+}
+
+/* Mobile Frame Simulator */
+.mobile-frame-mode {
+  max-width: 440px !important;
+  margin: 1.5rem auto !important;
+  border: 10px solid #1e293b;
+  border-radius: 48px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  background-color: #0f172a;
+}
+
+/* Radar Sweep Animation */
+.bg-radial-gradient {
+  background: radial-gradient(circle, #022c22 0%, #030712 100%);
+}
+
+.radar-sweep {
+  background: conic-gradient(from 0deg at 50% 50%, rgba(16, 185, 129, 0) 0deg, rgba(16, 185, 129, 0.35) 45deg, rgba(16, 185, 129, 0) 50deg);
+  border-radius: 50%;
+  animation: radar-spin 4s linear infinite;
+}
+
+@keyframes radar-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Rain Blob Animations for Radar simulation */
+.rain-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(12px);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.blob-1 {
+  width: 90px;
+  height: 70px;
+  background: rgba(34, 197, 94, 0.6);
+  top: 30%;
+  left: 60%;
+  animation: blob-float 6s ease-in-out infinite alternate;
+}
+
+.blob-2 {
+  width: 120px;
+  height: 90px;
+  background: rgba(234, 179, 8, 0.5);
+  top: 55%;
+  left: 35%;
+  animation: blob-float 8s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes blob-float {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(15px, -10px) scale(1.1); }
+}
+
+/* Dynamic Gauge Bar animations */
+.gauge-fill {
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Tide Wave Ripple */
+.wave-ripple {
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.2) 0%, rgba(14, 165, 233, 0.05) 100%);
+}
+
+/* Card Glow Hover */
+.glass-card {
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(100, 116, 139, 0.8);
+}

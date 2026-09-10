@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mausam 2.0 | Personalized Weather Portal - MoES / IMD</title>
+  <meta name="description" content="Personalized Homepage for Mausam Mobile Application - Ministry of Earth Sciences, India Meteorological Department" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌤️</text></svg>">
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            imd: {
+              navy: '#0b2545',
+              blue: '#134074',
+              accent: '#8da9c4',
+              gold: '#e0a96d',
+              saffron: '#FF9933',
+              green: '#138808'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-full font-sans antialiased selection:bg-amber-500 selection:text-slate-900 transition-colors duration-300">
+
+  <!-- Top Government Ribbon -->
+  <header class="bg-gradient-to-r from-orange-600 via-white to-emerald-700 h-1 w-full fixed top-0 left-0 z-50"></header>
+
+  <!-- Main Container -->
+  <div id="app-container" class="min-h-screen flex flex-col pt-1">
+    
+    <!-- Navigation Bar -->
+    <nav class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-1 z-40 px-4 py-2.5 transition-all">
+      <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+        
+        <!-- Logo & Official Branding -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-800 flex items-center justify-center shadow-lg shadow-blue-500/20 text-white font-black text-xl tracking-tighter ring-1 ring-blue-400/40">
+            म
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-black text-lg tracking-tight bg-gradient-to-r from-white via-blue-100 to-sky-300 bg-clip-text text-transparent">MAUSAM 2.0</span>
+              <span class="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">MoES / IMD</span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-medium hidden sm:block">India Meteorological Department • All-India & Global Coverage</p>
+          </div>
+        </div>
+
+        <!-- Center Search & Location Bar (Universal City/District Search) -->
+        <div class="flex-1 max-w-md relative hidden md:block">
+          <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input
+              id="city-search-input"
+              type="text"
+              placeholder="Search ANY City, District, Taluk or Pincode..."
+              class="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl pl-9 pr-20 py-1.5 text-xs text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              autocomplete="off"
+            />
+            <button
+              id="gps-btn"
+              title="Use Exact Device GPS Location"
+              class="absolute right-1.5 top-1/2 -translate-y-1/2 px-2 py-1 bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 border border-blue-500/30 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition-all"
+            >
+              <i data-lucide="crosshair" class="w-3 h-3"></i>
+              <span>GPS</span>
+            </button>
+          </div>
+          <!-- Autocomplete Dropdown -->
+          <div id="search-results-dropdown" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 max-h-72 overflow-y-auto"></div>
+        </div>
+
+        <!-- Right Quick Controls -->
+        <div class="flex items-center gap-2">
+          <!-- State & District Directory Explorer Button -->
+          <button
+            id="open-district-explorer-btn"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-600/20 to-orange-600/20 border border-amber-500/30 text-amber-300 hover:from-amber-600/30 hover:to-orange-600/30 text-xs font-semibold shadow-sm transition-all"
+            title="Browse All Indian States & Districts Directory"
+          >
+            <i data-lucide="map" class="w-4 h-4 text-amber-400"></i>
+            <span class="hidden sm:inline">All States/Districts</span>
+          </button>
+
+          <!-- Voice Briefing Button -->
+          <button
+            id="voice-briefing-btn"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600/20 to-teal-600/20 border border-emerald-500/30 text-emerald-300 hover:from-emerald-600/30 hover:to-teal-600/30 text-xs font-semibold shadow-sm transition-all"
+            title="Listen to Personalized Voice Weather Briefing"
+          >
+            <i data-lucide="volume-2" class="w-4 h-4 text-emerald-400 animate-pulse"></i>
+            <span class="hidden sm:inline">Voice Brief</span>
+          </button>
+
+          <!-- Radar & Satellite Map Toggle -->
+          <button
+            id="radar-modal-btn"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-300 hover:bg-blue-600/30 text-xs font-semibold transition-all"
+            title="IMD Doppler Radar & Cloud Satellite Imagery"
+          >
+            <i data-lucide="radar" class="w-4 h-4 text-blue-400"></i>
+            <span class="hidden sm:inline">Radar</span>
+          </button>
+
+          <!-- View Mode Toggle (Mobile Shell vs Desktop) -->
+          <button
+            id="device-frame-toggle"
+            class="p-2 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white transition-all"
+            title="Toggle Smartphone Preview Frame"
+          >
+            <i data-lucide="smartphone" class="w-4 h-4"></i>
+          </button>
+
+          <!-- Customize Widgets Button -->
+          <button
+            id="customize-widgets-btn"
+            class="p-2 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white transition-all"
+            title="Personalize Homepage Widgets"
+          >
+            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Mobile Search Bar (Visible on small screens) -->
+      <div class="mt-2 block md:hidden relative">
+        <div class="relative">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input
+            id="city-search-input-mobile"
+            type="text"
+            placeholder="Search ANY City / District / State (e.g. Pune, Patna, Leh)..."
+            class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-16 py-1.5 text-xs text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            id="gps-btn-mobile"
+            class="absolute right-1 top-1/2 -translate-y-1/2 px-2 py-1 bg-blue-600/40 text-blue-300 rounded-lg text-[11px] font-semibold flex items-center gap-1"
+          >
+            <i data-lucide="crosshair" class="w-3 h-3"></i>
+            <span>GPS</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Quick Location Chips Carousel (Pan-India Cities) -->
+    <div class="bg-slate-900/60 border-b border-slate-800/60 px-4 py-2 overflow-x-auto no-scrollbar">
+      <div id="quick-cities-container" class="max-w-7xl mx-auto flex items-center gap-2 text-xs">
+        <!-- Injected dynamically by JS -->
+      </div>
+    </div>
+
+    <!-- Active Persona Tab Bar (Horizontal Scrollable Pill Bar) -->
+    <div class="bg-slate-900/95 backdrop-blur-md border-b border-slate-800 py-2.5 px-4 sticky top-[57px] z-30 shadow-md">
+      <div class="max-w-7xl mx-auto">
+        <div class="flex items-center justify-between gap-2 mb-1.5">
+          <span class="text-[11px] uppercase tracking-wider font-bold text-slate-400 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            Select Your Mausam Persona:
+          </span>
+          <span id="persona-active-badge" class="text-[11px] font-semibold text-blue-300 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20">
+            Health-Conscious
+          </span>
+        </div>
+
+        <div id="persona-pill-bar" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+          <button data-persona="health" class="persona-tab active flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0">
+            <span class="text-base">🩺</span>
+            <span>Health & Allergy</span>
+          </button>
+          <button data-persona="fitness" class="persona-tab flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0">
+            <span class="text-base">🏃</span>
+            <span>Outdoor Fitness</span>
+          </button>
+          <button data-persona="beach" class="persona-tab flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0">
+            <span class="text-base">🏄</span>
+            <span>Beach & Coastal</span>
+          </button>
+          <button data-persona="travel" class="persona-tab flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0">
+            <span class="text-base">✈️</span>
+            <span>Smart Travel</span>
+          </button>
+          <button data-persona="family" class="persona-tab flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0">
+            <span class="text-base">👨‍👩‍👧</span>
+            <span>Parents & Family</span>
+          </button>
+          <button data-persona="agri" class="persona-tab flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0">
+            <span class="text-base">🌾</span>
+            <span>Agriculture (GKMS)</span>
+          </button>
+          <button data-persona="commute" class="persona-tab flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0">
+            <span class="text-base">🚗</span>
+            <span>Daily Commuter</span>
+          </button>
+          <button data-persona="event" class="persona-tab flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0">
+            <span class="text-base">🎪</span>
+            <span>Event Planner</span>
+          </button>
+          <button data-persona="hybrid" class="persona-tab flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 bg-gradient-to-r from-purple-900/50 to-indigo-900/50 border border-purple-500/40">
+            <span class="text-base">⚡</span>
+            <span>Smart Auto-Blend</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main id="main-content-layout" class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 transition-all duration-300">
+      
+      <!-- Top Master Weather Card -->
+      <section id="hero-weather-card" class="mb-6 rounded-3xl bg-gradient-to-br from-slate-900/90 via-blue-950/50 to-slate-900/90 border border-slate-800 p-5 sm:p-7 shadow-2xl relative overflow-hidden backdrop-blur-xl">
+        <div id="hero-glow" class="absolute -right-16 -top-16 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          
+          <!-- Left: Location, Time & Main Metric -->
+          <div class="lg:col-span-5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <i data-lucide="map-pin" class="w-4 h-4 text-blue-400"></i>
+                <h1 id="current-location-name" class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">New Delhi</h1>
+                <span id="current-region-badge" class="text-xs text-slate-400 font-medium px-2 py-0.5 rounded-md bg-slate-800/80 border border-slate-700">Delhi, India</span>
+              </div>
+              <p id="current-time-string" class="text-xs text-slate-400 font-medium flex items-center gap-2">
+                <span id="local-clock">Saturday, 29 Aug • 04:05 PM IST</span>
+                <span class="w-1 h-1 rounded-full bg-slate-600"></span>
+                <span class="text-emerald-400 font-semibold flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Live IMD Station Sync
+                </span>
+              </p>
+            </div>
+
+            <!-- Big Temp Display -->
+            <div class="mt-4 flex items-baseline gap-4">
+              <div class="flex items-start">
+                <span id="current-temp" class="text-6xl sm:text-7xl font-black tracking-tighter text-white">32</span>
+                <span class="text-3xl font-bold text-blue-300 mt-1">°C</span>
+              </div>
+              <div class="flex flex-col">
+                <span id="current-weather-desc" class="text-lg font-bold text-slate-200 flex items-center gap-2">
+                  <span id="weather-icon-emoji" class="text-2xl">⛅</span>
+                  <span id="weather-condition-text">Partly Cloudy</span>
+                </span>
+                <span class="text-xs text-slate-400 mt-0.5">
+                  Feels like <strong id="feels-like-temp" class="text-slate-200">36°C</strong> • H: <span id="temp-high">35°C</span> L: <span id="temp-low">26°C</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Middle: Persona Highlight Intelligence Card -->
+          <div class="lg:col-span-4 bg-slate-800/50 rounded-2xl p-4 border border-slate-700/60 shadow-inner">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span id="persona-hero-icon" class="text-xl">🩺</span>
+                <h2 id="persona-hero-title" class="text-xs font-bold uppercase tracking-wider text-slate-300">Health Priority Alert</h2>
+              </div>
+              <span id="persona-hero-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                MODERATE AQI
+              </span>
+            </div>
+            <p id="persona-hero-summary" class="text-xs text-slate-300 leading-relaxed">
+              AQI is currently 142. Sensitive individuals with respiratory conditions should limit prolonged outdoor exertion today.
+            </p>
+            <div id="persona-hero-action" class="mt-3 pt-2.5 border-t border-slate-700/50 flex items-center justify-between text-xs">
+              <span class="text-slate-400 font-medium text-[11px] flex items-center gap-1">
+                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-blue-400"></i>
+                <span id="persona-hero-metric-label">Allergy Risk:</span>
+                <strong id="persona-hero-metric-val" class="text-amber-300">Low-Moderate</strong>
+              </span>
+              <button id="persona-quick-action-btn" class="text-[11px] font-bold text-blue-400 hover:text-blue-300 flex items-center gap-0.5">
+                <span>View Details</span>
+                <i data-lucide="chevron-right" class="w-3 h-3"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: Key Weather Stats Grid -->
+          <div class="lg:col-span-3 grid grid-cols-2 gap-2.5 text-xs">
+            <div class="bg-slate-800/40 rounded-xl p-2.5 border border-slate-700/40 flex flex-col">
+              <span class="text-slate-400 text-[10px] flex items-center gap-1">
+                <i data-lucide="wind" class="w-3 h-3 text-blue-400"></i> Wind
+              </span>
+              <span id="current-wind" class="font-bold text-slate-100 text-sm mt-0.5">14 km/h NW</span>
+              <span id="current-gusts" class="text-[10px] text-slate-400">Gusts: 22 km/h</span>
+            </div>
+
+            <div class="bg-slate-800/40 rounded-xl p-2.5 border border-slate-700/40 flex flex-col">
+              <span class="text-slate-400 text-[10px] flex items-center gap-1">
+                <i data-lucide="droplets" class="w-3 h-3 text-cyan-400"></i> Humidity
+              </span>
+              <span id="current-humidity" class="font-bold text-slate-100 text-sm mt-0.5">68%</span>
+              <span id="current-dewpoint" class="text-[10px] text-slate-400">Dew: 24°C</span>
+            </div>
+
+            <div class="bg-slate-800/40 rounded-xl p-2.5 border border-slate-700/40 flex flex-col">
+              <span class="text-slate-400 text-[10px] flex items-center gap-1">
+                <i data-lucide="sun" class="w-3 h-3 text-amber-400"></i> UV Index
+              </span>
+              <span id="current-uv" class="font-bold text-slate-100 text-sm mt-0.5">7 (High)</span>
+              <span class="text-[10px] text-amber-400/80">SPF 30+ needed</span>
+            </div>
+
+            <div class="bg-slate-800/40 rounded-xl p-2.5 border border-slate-700/40 flex flex-col">
+              <span class="text-slate-400 text-[10px] flex items-center gap-1">
+                <i data-lucide="gauge" class="w-3 h-3 text-emerald-400"></i> Pressure
+              </span>
+              <span id="current-pressure" class="font-bold text-slate-100 text-sm mt-0.5">1008 hPa</span>
+              <span class="text-[10px] text-emerald-400/80">Stable baro</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Hourly Forecast Carousel -->
+      <section class="mb-6 bg-slate-900/60 rounded-2xl border border-slate-800 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+            <i data-lucide="clock" class="w-3.5 h-3.5 text-blue-400"></i>
+            24-Hour Timeline & Condition Transitions
+          </h2>
+          <span class="text-[10px] text-slate-500">Hourly Precision</span>
+        </div>
+        <div id="hourly-forecast-container" class="flex items-center gap-3 overflow-x-auto no-scrollbar py-1"></div>
+      </section>
+
+      <!-- DYNAMIC PERSONA-SPECIFIC DASHBOARD CONTAINER -->
+      <section id="persona-dashboard-container" class="space-y-6"></section>
+
+      <!-- 7-Day Extended IMD Synoptic Outlook -->
+      <section class="mt-8 bg-slate-900/70 rounded-2xl border border-slate-800 p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+              <i data-lucide="calendar" class="w-4 h-4 text-blue-400"></i>
+              7-Day Synoptic Weather Outlook
+            </h2>
+            <p class="text-xs text-slate-400">IMD Multi-model ensemble forecast</p>
+          </div>
+          <button id="download-bulletin-btn" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1.5 border border-slate-700 transition-all">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Export Mausam Card</span>
+          </button>
+        </div>
+
+        <div id="daily-forecast-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3"></div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto border-t border-slate-800/80 bg-slate-950 py-6 px-4 text-center text-xs text-slate-500">
+      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2 text-left">
+          <div class="w-6 h-6 rounded-lg bg-blue-600/30 border border-blue-500/40 flex items-center justify-center text-blue-300 font-bold text-xs">
+            म
+          </div>
+          <div>
+            <p class="font-semibold text-slate-300">Mausam Mobile 2.0 • Universal & Personalized Weather Portal</p>
+            <p class="text-[11px] text-slate-500">Ministry of Earth Sciences (MoES) | India Meteorological Department (IMD)</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 text-[11px]">
+          <span class="hover:text-slate-300 cursor-pointer">Gramin Krishi Mausam Sewa</span>
+          <span class="hover:text-slate-300 cursor-pointer">SAMEER AQI</span>
+          <span class="hover:text-slate-300 cursor-pointer">INCOIS Marine</span>
+          <span class="hover:text-slate-300 cursor-pointer">Doppler Radar</span>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- 1. All-India State & District Directory Explorer Modal -->
+  <div id="district-explorer-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl p-6 max-w-2xl w-full shadow-2xl relative max-h-[85vh] flex flex-col">
+      <button id="close-district-modal" class="absolute right-4 top-4 p-2 text-slate-400 hover:text-white rounded-lg">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+          <i data-lucide="map" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-base text-white">All India States & Districts Explorer</h3>
+          <p class="text-xs text-slate-400">Select any State or Union Territory across India</p>
+        </div>
+      </div>
+
+      <!-- State Selection Tabs -->
+      <div class="mb-3">
+        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">1. Select State / Region:</label>
+        <select id="state-select-dropdown" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500">
+          <!-- Options populated by JS -->
+        </select>
+      </div>
+
+      <!-- District / Station Grid -->
+      <div class="flex-1 overflow-y-auto pr-1">
+        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">2. Select District / Weather Station:</label>
+        <div id="district-chips-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Voice Briefing Modal -->
+  <div id="voice-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl p-6 max-w-md w-full shadow-2xl relative">
+      <button id="close-voice-modal" class="absolute right-4 top-4 p-2 text-slate-400 hover:text-white rounded-lg">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-2xl">
+          🎙️
+        </div>
+        <div>
+          <h3 class="font-bold text-lg text-white">Mausam Voice Assistant</h3>
+          <p class="text-xs text-slate-400">Personalized Audio Weather Bulletin</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 mb-4">
+        <button id="voice-lang-en" class="flex-1 py-1.5 text-xs font-bold rounded-xl bg-blue-600 text-white transition-all">
+          English Briefing
+        </button>
+        <button id="voice-lang-hi" class="flex-1 py-1.5 text-xs font-bold rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all">
+          हिन्दी बुलेटिन
+        </button>
+      </div>
+
+      <div class="bg-slate-950 rounded-2xl p-4 border border-slate-800 min-h-[140px] max-h-[220px] overflow-y-auto mb-4 text-xs text-slate-300 leading-relaxed font-sans" id="voice-transcript-text">
+        Press "Play Voice Briefing" to listen to today's personalized weather, AQI, and activity safety report for your active persona.
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button id="play-voice-btn" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 transition-all">
+          <i data-lucide="play" class="w-4 h-4"></i>
+          <span>Play Voice Briefing</span>
+        </button>
+        <button id="stop-voice-btn" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs flex items-center justify-center gap-1 transition-all">
+          <i data-lucide="square" class="w-4 h-4"></i>
+          <span>Stop</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Doppler Radar & Satellite Layer Modal -->
+  <div id="radar-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl p-6 max-w-3xl w-full shadow-2xl relative">
+      <button id="close-radar-modal" class="absolute right-4 top-4 p-2 text-slate-400 hover:text-white rounded-lg">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="flex items-center justify-between mb-4 pr-8">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400">
+            <i data-lucide="radar" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-white">IMD Doppler Weather Radar & INSAT-3D Satellite</h3>
+            <p class="text-xs text-slate-400">Live Precipitation Intensity & Cloud Motion</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="relative bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden h-[360px] flex items-center justify-center">
+        <div id="radar-screen" class="w-full h-full relative overflow-hidden flex items-center justify-center bg-radial-gradient">
+          <div class="radar-sweep absolute inset-0 pointer-events-none"></div>
+          <div class="w-3 h-3 rounded-full bg-blue-400 ring-4 ring-blue-500/30 z-10 animate-ping"></div>
+          <div class="absolute text-center z-10">
+            <p id="radar-center-location" class="font-bold text-sm text-white drop-shadow">New Delhi Radar Station (DWR)</p>
+            <p class="text-[11px] text-blue-300">Scan Range: 250 km • Max Reflectivity: 38 dBZ</p>
+          </div>
+          <div class="rain-blob blob-1"></div>
+          <div class="rain-blob blob-2"></div>
+        </div>
+
+        <div class="absolute bottom-3 left-3 right-3 bg-slate-900/90 backdrop-blur-md rounded-xl p-2.5 border border-slate-700/80 flex items-center justify-between text-[10px]">
+          <span class="font-bold text-slate-300">Precipitation dBZ:</span>
+          <div class="flex items-center gap-1">
+            <span class="w-5 h-2.5 rounded bg-blue-500" title="Light Rain (<20 dBZ)"></span>
+            <span class="w-5 h-2.5 rounded bg-green-500" title="Moderate (20-35 dBZ)"></span>
+            <span class="w-5 h-2.5 rounded bg-yellow-500" title="Heavy (35-45 dBZ)"></span>
+            <span class="w-5 h-2.5 rounded bg-red-500" title="Severe Storm (>45 dBZ)"></span>
+            <span class="w-5 h-2.5 rounded bg-purple-600" title="Hail / Cloudburst"></span>
+          </div>
+          <span class="text-emerald-400 font-mono">No Cyclone Threat</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. AI Travel Packing Assistant Modal -->
+  <div id="packing-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl p-6 max-w-lg w-full shadow-2xl relative">
+      <button id="close-packing-modal" class="absolute right-4 top-4 p-2 text-slate-400 hover:text-white rounded-lg">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-400">
+          <i data-lucide="luggage" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-base text-white">AI Smart Packing Advisor</h3>
+          <p class="text-xs text-slate-400">Forecast-tailored gear & clothing checklist</p>
+        </div>
+      </div>
+
+      <div id="packing-list-content" class="space-y-3 max-h-[340px] overflow-y-auto pr-1 text-xs"></div>
+    </div>
+  </div>
+
+  <!-- 5. Customize Widgets Modal -->
+  <div id="customize-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl p-6 max-w-md w-full shadow-2xl relative">
+      <button id="close-customize-modal" class="absolute right-4 top-4 p-2 text-slate-400 hover:text-white rounded-lg">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+          <i data-lucide="sliders" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-base text-white">Customize Your Homepage</h3>
+          <p class="text-xs text-slate-400">Enable or disable persona modules</p>
+        </div>
+      </div>
+
+      <div id="widgets-toggle-list" class="space-y-2.5 max-h-[280px] overflow-y-auto pr-1 text-xs"></div>
+
+      <div class="mt-5 pt-3 border-t border-slate-800 flex justify-end gap-2">
+        <button id="reset-widgets-btn" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">Reset Defaults</button>
+        <button id="save-widgets-btn" class="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold">Save Layout</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Modules -->
+  <script src="js/weatherService.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/packingAdvisor.js"></script>
+  <script src="js/voiceBriefing.js"></script>
+  <script src="js/personaEngine.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    });
+  </script>
+</body>
+</html>
